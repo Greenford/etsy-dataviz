@@ -1,0 +1,3 @@
+*.swp
+src/__pycache__/*
+src/static/*
