@@ -20,5 +20,5 @@ def variation_sales_graph(listing):
     return f'<img src="{url_for("static", filename=graph_name)}">'
 
 if __name__ == '__main__':
-    app.run(ssl_context='adhoc')
+    app.run(ssl_context=('cert.pem', 'key.pem'))
 
