@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
 import re
 from itertools import chain
 from datetime import datetime
@@ -93,7 +94,7 @@ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_
         .fillna(0, downcast='infer')
 
     #init plot
-    fig, ax = plt.subplots(figsize=(18,8))
+    fig, ax = plt.subplots(figsize=(14,6))
 
 
     for v in relevant_variations:
