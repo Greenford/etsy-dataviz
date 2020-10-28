@@ -1,4 +1,5 @@
 *.swp
-src/__pycache__/*
-src/static/*
+__pycache__/
+*/static/*
 *.pem
+*.pyc
