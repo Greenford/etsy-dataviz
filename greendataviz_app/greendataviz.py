@@ -76,7 +76,7 @@ def explode_variations_column(df, suffix="", drop=True):
     _sesh['var_col_names'] = new_col_names
     return new_col_names
 
-def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
+ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
     #focus only on the requested listing
     plot_df = df[df['Item Name']==listing]
     if not 'Variation' in df.columns:
@@ -106,7 +106,9 @@ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_
     ax.set_ylabel(y_axis_label)
     ax.legend()
     
-    plt_name = datetime.now().strftime(f'%Y-%m-%d-%H_{listing}_{gb_freq}.jpg') 
-    plt.savefig('./static/'+plt_name)
+    if not os.path.exists('greendataviz_app/static'):
+        os.makedirs('greendataviz_app/static')
+    plt_name = datetime.now().strftime(f'%Y-%m-%d-%H_{listing}_{gb_freq}.jpg')
+    plt.savefig('./greendataviz_app/static/'+plt_name)
 
     return plt_name, pt
