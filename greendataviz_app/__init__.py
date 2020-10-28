@@ -2,7 +2,7 @@ import os
 from flask import Flask, url_for
 from greendataviz_app import greendataviz as gdv
 
- def create_app(test_config=None):
+def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
