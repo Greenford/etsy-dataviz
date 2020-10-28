@@ -1,12 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
-import re
+import os, sys, re
 from itertools import chain
 from datetime import datetime
+plt.style.use('fivethirtyeight')
 
 _sesh = dict()
+
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter('ignore')
 
 def get_listings(file=None):
     if not 'listings' in _sesh.keys():
@@ -76,7 +80,7 @@ def explode_variations_column(df, suffix="", drop=True):
     _sesh['var_col_names'] = new_col_names
     return new_col_names
 
- def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
+def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
     #focus only on the requested listing
     plot_df = df[df['Item Name']==listing]
     if not 'Variation' in df.columns:

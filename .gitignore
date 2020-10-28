@@ -1,6 +1,6 @@
 *.swp
 __pycache__/
-*/static/*
+static/
 *.pem
 *.pyc
 data/
