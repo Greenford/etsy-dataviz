@@ -1,6 +1,6 @@
 import os
 from flask import Flask, url_for
-import greendataviz as gdv
+from greendataviz_app import greendataviz as gdv
 
 def create_app(test_config=None):
 
