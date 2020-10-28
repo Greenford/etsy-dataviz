@@ -21,7 +21,7 @@ def create_app(test_config=None):
         pass
 
     @app.route('/')
-     def entrance():
+    def entrance():
         return f'<a href={url_for("variation_sales")}>Variation Sales</a>'
 
     @app.route('/variation-sales')
