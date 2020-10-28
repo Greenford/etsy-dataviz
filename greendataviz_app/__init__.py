@@ -2,7 +2,7 @@ import os
 from flask import Flask, url_for
 from greendataviz_app import greendataviz as gdv
 
-def create_app(test_config=None):
+ def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -21,13 +21,12 @@ def create_app(test_config=None):
         pass
 
     @app.route('/')
-    def entrance():
-        return "Hello Lauren"
-        #return f'<a href={url_for("variation_sales")}>Variation Sales</a>'
+     def entrance():
+        return f'<a href={url_for("variation_sales")}>Variation Sales</a>'
 
     @app.route('/variation-sales')
     def variation_sales():
-        f = '../../data/EtsySoldOrderItems2020.csv'
+        f = './data/EtsySoldOrderItems2020.csv'
         listings = gdv.get_listings(f)
         return str([f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>' for l in listings])
         

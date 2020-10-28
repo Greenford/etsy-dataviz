@@ -107,6 +107,6 @@ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_
     ax.legend()
     
     plt_name = datetime.now().strftime(f'%Y-%m-%d-%H_{listing}_{gb_freq}.jpg') 
-    plt.savefig('static/'+plt_name)
+    plt.savefig('./static/'+plt_name)
 
     return plt_name, pt
