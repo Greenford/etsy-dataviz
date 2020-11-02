@@ -1,5 +1,5 @@
 import os
-from flask import Flask, flash, url_for, request
+from flask import Flask, flash, url_for, request, redirect
 from greendataviz_app import greendataviz as gdv
 
 ALLOWED_EXTENSIONS = {'csv'}
