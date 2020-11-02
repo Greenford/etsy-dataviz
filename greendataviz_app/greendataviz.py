@@ -104,7 +104,7 @@ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_
 
     pt = plot_df.pivot_table(index = x_axis_label, columns='Variations', values=y_axis_label)\
         .fillna(0, downcast='infer')\
-        .asfreq('D', fill_value=0)        
+        .asfreq(gb_freq, fill_value=0)        
 
     #init plot
     fig, ax = plt.subplots(figsize=(14,6))
