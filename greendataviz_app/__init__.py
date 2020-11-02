@@ -2,18 +2,10 @@ import os
 from flask import Flask, flash, url_for, request, redirect
 from greendataviz_app import greendataviz as gdv
 
-ALLOWED_EXTENSIONS = {'csv'}
-UPLOAD_FOLDER = './data/uploads'
-
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE = os.path.join(app.instance_path, 'greendataviz_app.sqlite'),
-        UPLOAD_FOLDER = UPLOAD_FOLDER,
-    )
-
+    app.config.from_object('config')
 
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
@@ -42,7 +34,7 @@ def create_app(test_config=None):
 
     def allowed_file(filename):
         return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
     @app.route('/upload-file', methods = ['GET', 'POST'])
     def upload_file():
@@ -60,8 +52,8 @@ def create_app(test_config=None):
             if file and allowed_file(file.filename):
                 #filename = secure_filename(file.filename)
                 filename = 'orderitems.csv'
-                if not os.path.exists(UPLOAD_FOLDER):
-                    os.makedirs(UPLOAD_FOLDER)
+                if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                    os.makedirs(app.config['UPLOAD_FOLDER'])
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 return redirect(url_for('entrance',
                                         filename=filename))
