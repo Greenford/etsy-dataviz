@@ -39,6 +39,14 @@ def get_variation_sales_data(file=None):
         df = df[['Sale Date', 'Item Name', 'Quantity', 'Price', 'Variations', 'SKU']]
         df['Sale Date'] = pd.to_datetime(df['Sale Date'])
         df.fillna({'Variations':''}, inplace=True)
+        def stripdelay(s):
+            m = re.compile('\([\w\s]+\)\s*').search(s)
+            if m:
+                return s[:m.span()[0]]+s[m.span()[1]:]
+            else:
+                return s
+        df['Variations'] = df['Variations'].transform(stripdelay)
+
         explode_variations_column(df)
     else: #use API
         pass
@@ -83,7 +91,7 @@ def explode_variations_column(df, suffix="", drop=True):
 def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
     #focus only on the requested listing
     plot_df = df[df['Item Name']==listing]
-    if not 'Variation' in df.columns:
+    if not 'Variations' in plot_df.columns:
         plot_df['Variations'] = ""
         for n in _sesh['var_col_names']:
             plot_df.loc[:,'Variations'] += plot_df[n] + ' '
@@ -95,7 +103,8 @@ def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_
     ]).sum().reset_index()
 
     pt = plot_df.pivot_table(index = x_axis_label, columns='Variations', values=y_axis_label)\
-        .fillna(0, downcast='infer')
+        .fillna(0, downcast='infer')\
+        .asfreq('D', fill_value=0)        
 
     #init plot
     fig, ax = plt.subplots(figsize=(14,6))
