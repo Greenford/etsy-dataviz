@@ -4,3 +4,4 @@ static/
 *.pem
 *.pyc
 data/
+instance/
