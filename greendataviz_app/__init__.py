@@ -2,7 +2,7 @@ import os
 from flask import Flask, flash, url_for, request, redirect, session
 from greendataviz_app import greendataviz as gdv
 
- def create_app(test_config=None):
+def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object('config')
@@ -31,10 +31,10 @@ from greendataviz_app import greendataviz as gdv
 
 
     @app.route('/variation-sales')
-     def variation_sales():
+    def variation_sales():
         f = app.config['UPLOAD_FOLDER']+session['filename']
         listings = gdv.get_listings(f)
-        r eturn str([f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>' for l in listings])
+        return str([f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>' for l in listings])
          
     @app.route('/variation-sales-graph/<listing>')
     def variation_sales_graph(listing):
