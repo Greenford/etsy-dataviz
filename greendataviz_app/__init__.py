@@ -1,8 +1,8 @@
 import os
-from flask import Flask, flash, url_for, request, redirect
+from flask import Flask, flash, url_for, request, redirect, session
 from greendataviz_app import greendataviz as gdv
 
-def create_app(test_config=None):
+ def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object('config')
@@ -17,16 +17,25 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    def get_rand_string(keylen):
+        import string, random
+        chars = string.ascii_letters + string.digits
+        return "".join([random.choice(chars) for i in range(keylen)])
+
     @app.route('/')
     def entrance():
-        return f'<a href={url_for("variation_sales")}>Variation Sales</a>'
+        if not 'filename' in session:
+            return redirect(url_for('upload_file'))
+        else:
+            return f'<a href={url_for("variation_sales")}>Variation Sales</a>' 
+
 
     @app.route('/variation-sales')
-    def variation_sales():
-        f = './data/uploads/orderitems.csv'
+     def variation_sales():
+        f = app.config['UPLOAD_FOLDER']+session['filename']
         listings = gdv.get_listings(f)
-        return str([f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>' for l in listings])
-        
+        r eturn str([f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>' for l in listings])
+         
     @app.route('/variation-sales-graph/<listing>')
     def variation_sales_graph(listing):
         graph_name, _ = gdv.variation_sales_linegraph(gdv._sesh['df'], listing, 'W')
@@ -39,24 +48,25 @@ def create_app(test_config=None):
     @app.route('/upload-file', methods = ['GET', 'POST'])
     def upload_file():
         if request.method == 'POST':
+
         # check if the post request has the file part
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
             file = request.files['file']
+
             # if user does not select file, browser also
             # submit an empty part without filename
             if file.filename == '':
                 flash('No selected file')
                 return redirect(request.url)
             if file and allowed_file(file.filename):
-                #filename = secure_filename(file.filename)
-                filename = 'orderitems.csv'
+                session['filename'] = secure_filename(get_rand_string(16)+'.csv')
+                session.permanent = False
                 if not os.path.exists(app.config['UPLOAD_FOLDER']):
                     os.makedirs(app.config['UPLOAD_FOLDER'])
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                return redirect(url_for('entrance',
-                                        filename=filename))
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], session['filename']))
+                return redirect(url_for('entrance'))
         return '''
         <!doctype html>
         <title>Upload new File</title>
