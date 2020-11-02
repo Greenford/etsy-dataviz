@@ -4,21 +4,25 @@ import matplotlib.pyplot as plt
 import os, sys, re
 from itertools import chain
 from datetime import datetime
-plt.style.use('fivethirtyeight')
+
+plt.style.use("fivethirtyeight")
 
 _sesh = dict()
 
 if not sys.warnoptions:
     import warnings
-    warnings.simplefilter('ignore')
+
+    warnings.simplefilter("ignore")
+
 
 def get_listings(file=None):
-    if not 'listings' in _sesh.keys():
-        df = get_variation_sales_data(file) 
-        _sesh['listings'] = df['Item Name'].unique()
-        _sesh['df'] = df
-    return _sesh['listings']
- 
+    if not "listings" in _sesh.keys():
+        df = get_variation_sales_data(file)
+        _sesh["listings"] = df["Item Name"].unique()
+        _sesh["df"] = df
+    return _sesh["listings"]
+
+
 def get_variation_sales_data(file=None):
     """
     Gets relevant data from a variety of sources, such as a csv, or via the API (with
@@ -33,25 +37,28 @@ def get_variation_sales_data(file=None):
     """
     df = None
     if file:
-        #read file
+        # read file
         df = pd.read_csv(file)
-        #clean data
-        df = df[['Sale Date', 'Item Name', 'Quantity', 'Price', 'Variations', 'SKU']]
-        df['Sale Date'] = pd.to_datetime(df['Sale Date'])
-        df.fillna({'Variations':''}, inplace=True)
+        # clean data
+        df = df[["Sale Date", "Item Name", "Quantity", "Price", "Variations", "SKU"]]
+        df["Sale Date"] = pd.to_datetime(df["Sale Date"])
+        df.fillna({"Variations": ""}, inplace=True)
+
         def stripdelay(s):
-            m = re.compile('\([\w\s]+\)\s*').search(s)
+            m = re.compile("\([\w\s]+\)\s*").search(s)
             if m:
-                return s[:m.span()[0]]+s[m.span()[1]:]
+                return s[: m.span()[0]] + s[m.span()[1] :]
             else:
                 return s
-        df['Variations'] = df['Variations'].transform(stripdelay)
+
+        df["Variations"] = df["Variations"].transform(stripdelay)
 
         explode_variations_column(df)
-    else: #use API
+    else:  # use API
         pass
 
     return df
+
 
 def explode_variations_column(df, suffix="", drop=True):
     """
@@ -66,62 +73,75 @@ def explode_variations_column(df, suffix="", drop=True):
     Returns:
         (list) newly created column names
     """
+
     def grab_value(key, string):
-        try: 
-            result = re.findall(f'{key}:[\w\s]*,?', string)[0]
-            result = result[len(key)+1:].strip(',')
+        try:
+            result = re.findall(f"{key}:[\w\s]*,?", string)[0]
+            result = result[len(key) + 1 :].strip(",")
         except IndexError:
             result = ""
         return result
-    
-    keys = pd.Series(chain.from_iterable(
-        df.Variations.apply(lambda st: [s.strip(':') for s in re.findall(r'\w*:',st)])
-    )).unique()
-    
-    new_col_names = [k+suffix for k in keys]
+
+    keys = pd.Series(
+        chain.from_iterable(
+            df.Variations.apply(
+                lambda st: [s.strip(":") for s in re.findall(r"\w*:", st)]
+            )
+        )
+    ).unique()
+
+    new_col_names = [k + suffix for k in keys]
     for c in new_col_names:
         df[c] = df.Variations.apply(lambda string: grab_value(c, string))
 
     if drop:
-        df.drop(columns='Variations', inplace=True)
+        df.drop(columns="Variations", inplace=True)
 
-    _sesh['var_col_names'] = new_col_names
+    _sesh["var_col_names"] = new_col_names
     return new_col_names
 
-def variation_sales_linegraph(df, listing, gb_freq, x_axis_label='Sale Date', y_axis_label='Quantity'):
-    #focus only on the requested listing
-    plot_df = df[df['Item Name']==listing]
-    if not 'Variations' in plot_df.columns:
-        plot_df['Variations'] = ""
-        for n in _sesh['var_col_names']:
-            plot_df.loc[:,'Variations'] += plot_df[n] + ' '
-    relevant_variations = plot_df['Variations'].unique()
 
-    plot_df = plot_df.groupby([
-        pd.Grouper(key=x_axis_label,freq=gb_freq), 
-        "Variations"
-    ]).sum().reset_index()
+def variation_sales_linegraph(
+    df, listing, gb_freq, x_axis_label="Sale Date", y_axis_label="Quantity"
+):
+    # focus only on the requested listing
+    plot_df = df[df["Item Name"] == listing]
+    if not "Variations" in plot_df.columns:
+        plot_df["Variations"] = ""
+        for n in _sesh["var_col_names"]:
+            plot_df.loc[:, "Variations"] += plot_df[n] + " "
+    relevant_variations = plot_df["Variations"].unique()
 
-    pt = plot_df.pivot_table(index = x_axis_label, columns='Variations', values=y_axis_label)\
-        .fillna(0, downcast='infer')\
-        .asfreq(gb_freq, fill_value=0)        
+    plot_df = (
+        plot_df.groupby([pd.Grouper(key=x_axis_label, freq=gb_freq), "Variations"])
+        .sum()
+        .reset_index()
+    )
 
-    #init plot
-    fig, ax = plt.subplots(figsize=(14,6))
+    pt = (
+        plot_df.pivot_table(
+            index=x_axis_label, columns="Variations", values=y_axis_label
+        )
+        .fillna(0, downcast="infer")
+        .asfreq(gb_freq, fill_value=0)
+    )
 
+    # init plot
+    fig, ax = plt.subplots(figsize=(14, 6))
 
     for v in relevant_variations:
         ax.plot(pt.index, pt[v], label=v)
 
-    #plot prettying
-    plt.xticks(rotation='vertical')
+    # plot prettying
+    plt.xticks(rotation="vertical")
+    #    plt.tight_layout()
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel(y_axis_label)
     ax.legend()
-    
-    if not os.path.exists('greendataviz_app/static'):
-        os.makedirs('greendataviz_app/static')
-    plt_name = datetime.now().strftime(f'%Y-%m-%d-%H_{listing}_{gb_freq}.jpg')
-    plt.savefig('./greendataviz_app/static/'+plt_name)
+
+    if not os.path.exists("greendataviz_app/static"):
+        os.makedirs("greendataviz_app/static")
+    plt_name = datetime.now().strftime(f"%Y-%m-%d-%H_{listing}_{gb_freq}.jpg")
+    plt.savefig("./greendataviz_app/static/" + plt_name, bbox_inches="tight")
 
     return plt_name, pt

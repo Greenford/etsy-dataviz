@@ -1,3 +1,2 @@
-ALLOWED_EXTENSIONS = {'csv'}
-UPLOAD_FOLDER = './data/uploads'
-
+ALLOWED_EXTENSIONS = {"csv"}
+UPLOAD_FOLDER = "./data/uploads"
