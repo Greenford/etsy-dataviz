@@ -1,8 +1,9 @@
 import os
-from flask import Flask, flash, url_for, request, redirect, session
+from flask import Flask, flash, url_for, request, redirect, session, render_template
+
 from greendataviz_app import greendataviz as gdv
 from werkzeug.utils import secure_filename
-
+from datetime import datetime
 
 def create_app(test_config=None):
 
@@ -17,35 +18,12 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    def get_rand_string(keylen):
-        import string, random
-
-        chars = string.ascii_letters + string.digits
-        return "".join([random.choice(chars) for i in range(keylen)])
-
+    
+    
     @app.route("/")
     def entrance():
-        if not "filename" in session:
-            return redirect(url_for("upload_file"))
-        else:
-            return f'<a href={url_for("variation_sales")}>Variation Sales</a>'
+        return render_template('home.html')
 
-    @app.route("/variation-sales")
-    def variation_sales():
-        f = app.config["UPLOAD_FOLDER"] + session["filename"]
-        listings = gdv.get_listings(f)
-        return str(
-            [
-                f'<a href={url_for("variation_sales_graph", listing=l)}>{l}</a><br>'
-                for l in listings
-            ]
-        )
-
-    @app.route("/variation-sales-graph/<listing>")
-    def variation_sales_graph(listing):
-        graph_name, _ = gdv.variation_sales_linegraph(gdv._sesh["df"], listing, "W")
-        return f'<img src="{url_for("static", filename=graph_name)}">'
 
     def allowed_file(filename):
         return (
@@ -69,11 +47,13 @@ def create_app(test_config=None):
                 flash("No selected file")
                 return redirect(request.url)
             if file and allowed_file(file.filename):
-                if os.path.exists("greendataviz_app/static"):
-                    import shutil
+#                if os.path.exists("greendataviz_app/static"):
+#                    import shutil
+#                    shutil.rmtree("greendataviz_app/static")
 
-                    shutil.rmtree("greendataviz_app/static")
-                session["filename"] = secure_filename(get_rand_string(16) + ".csv")
+                session["filename"] = datetime.now().strftime('%Y %b %-d %H%M:%S:%f')\
+                        + secure_filename(file.filename)
+
                 session.permanent = False
                 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
                     os.makedirs(app.config["UPLOAD_FOLDER"])
@@ -81,18 +61,25 @@ def create_app(test_config=None):
                     os.path.join(app.config["UPLOAD_FOLDER"], session["filename"])
                 )
                 return redirect(url_for("entrance"))
-        return """
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Upload new File</h1>
-        <form method=post enctype=multipart/form-data>
-          <input type=file name=file>
-          <input type=submit value=Upload>
-        </form>
-        """
+            else:
+                flash("".join([f'{e}, ' for e in app.config['ALLOWED_EXTENSIONS']])+'file types only.')
+                return redirect(request.url)
+        else:
+            return render_template('upload_file.html')
+
+
+
+    @app.route("/clear-file")
+    def clear_file():
+        return "Functionality forthcoming"
+
+    @app.route('/help')
+    def help():
+        return "Content forthcoming"
+
+    from . import variation_sales
+    app.register_blueprint(variation_sales.bp)
 
     return app
 
 
-#    if __name__ == '__main__':
-#        app.run(ssl_context=('cert.pem', 'key.pem'))

@@ -1,0 +1,38 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - [gfds]</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <h1>[gfds]</h1>
+  <ul>
+    {% if g.filename %}
+      <li><span>with: {{ g.filename }}</span>
+      <li><a href="{{ url_for('clear_file') }}">clear</a>
+    {% endif %}
+      <li><a href="{{ url_for('upload_file') }}">upload file</a>
+      <li><a href="{{ url_for('help') }}">help</a>
+	<br>
+      <li><a href="{{ url_for('variation_sales.index') }}">variation sales viz</a>
+  </ul>
+</nav>
+<span onclick="openNav()" style="font-size:30px;cursor:pointer">&#9776;</span>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>
+<script>
+function openNav() {
+  document.getElementById("mySidenav").style.width = "250px";
+  document.getElementById("content").style.marginLeft = "250px";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+  document.getElementById("content").style.marginLeft= "0";
+}
+</script>
