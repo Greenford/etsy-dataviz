@@ -5,6 +5,7 @@ from greendataviz_app import greendataviz as gdv
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
+
 def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
@@ -18,12 +19,10 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-    
-    
+
     @app.route("/")
     def entrance():
-        return render_template('home.html')
-
+        return render_template("home.html")
 
     def allowed_file(filename):
         return (
@@ -47,12 +46,13 @@ def create_app(test_config=None):
                 flash("No selected file")
                 return redirect(request.url)
             if file and allowed_file(file.filename):
-#                if os.path.exists("greendataviz_app/static"):
-#                    import shutil
-#                    shutil.rmtree("greendataviz_app/static")
+                #                if os.path.exists("greendataviz_app/static"):
+                #                    import shutil
+                #                    shutil.rmtree("greendataviz_app/static")
 
-                session["filename"] = datetime.now().strftime('%Y %b %-d %H%M:%S:%f')\
-                        + secure_filename(file.filename)
+                session["filename"] = datetime.now().strftime(
+                    "%Y %b %-d %H%M:%S:%f"
+                ) + secure_filename(file.filename)
 
                 session.permanent = False
                 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
@@ -62,24 +62,24 @@ def create_app(test_config=None):
                 )
                 return redirect(url_for("entrance"))
             else:
-                flash("".join([f'{e}, ' for e in app.config['ALLOWED_EXTENSIONS']])+'file types only.')
+                flash(
+                    "".join([f"{e}, " for e in app.config["ALLOWED_EXTENSIONS"]])
+                    + "file types only."
+                )
                 return redirect(request.url)
         else:
-            return render_template('upload_file.html')
-
-
+            return render_template("upload_file.html")
 
     @app.route("/clear-file")
     def clear_file():
         return "Functionality forthcoming"
 
-    @app.route('/help')
+    @app.route("/help")
     def help():
         return "Content forthcoming"
 
     from . import variation_sales
+
     app.register_blueprint(variation_sales.bp)
 
     return app
-
-
