@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}variation sales multilinegraph{% endblock %}</h1>
+{% endblock %}
+{% block content%}
+<head>
+    <meta charset="utf-8">
+    <style>
+        // our CSS here!
+    </style>
+</head>
+<body>
+    <div id="formDiv">
+        <form method="post">
+	    <select name="listing" id="listing">
+		{% if g.listings is not none %}
+		{% for i in g.listings %}
+		    <option value="{{i}}">{{i}}</option>
+		{% endfor %}
+		{% endif %}
+	    </select>
+	    <label for="listing">listing</label><br>
+		
+	    <input name="frequency" id="frequency" value='W' required>
+	    <label for="frequency">frequency</label><br>
+		
+	    <input type="checkbox" name="smooth" id="smooth" value="yes">
+	    <label for="smooth">smooth</label><br>
+		
+	    <input type="submit" value="Graph">
+
+       </form>
+    </div>
+    <div id="graphDiv"></div>
+    	<script src="https://d3js.org/d3.v5.min.js"></script>
+    	<script type="module">
+	import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+
+	import define from "https://api.observablehq.com/@greenford/multi-line-chart.js?v=3";
+
+	const main = new Runtime().module(define, Inspector.into("#graphDiv"));
+
+//	const main = (new Runtime()).module(define, name => {
+//	  if (name === "chart") return Inspector.into(".chart")();
+//	  else return true;
+//	});
+
+	(async function() {
+	  main.redefine("data", (async function(){
+		  const data = await d3.csv('{{url_for('static', filename="d3test.csv")}}');
+		  const columns = data.columns.slice(1);
+		  return {
+		    y: "Sales",
+		    series: data.map(d => ({
+		      name: d.Variations.replace(/, ([\w-]+).*/, " $1"),
+		      values: columns.map(k => +d[k])
+		    })),
+		    dates: columns.map(d3.utcParse("%Y-%m-%d"))
+		  };
+		})())
+	})();
+
+//	viewof excluded = selectionModeTxt === "0"
+//	  ? checkbox(stateCodes)
+//	  : Object.assign(html`<hr>`, {value: null})
+
+	</script>
+</body>
+
+{% endblock %}
+

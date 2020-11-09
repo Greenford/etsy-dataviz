@@ -12,11 +12,11 @@
       <li><a href="{{ url_for('upload_file') }}">upload file</a>
       <li><a href="{{ url_for('help') }}">help</a>
 	<br>
-      <li><a href="{{ url_for('variation_sales.index') }}">variation sales viz</a>
+      <li><a href="{{ url_for('variation_sales.graph_listing') }}">variation sales viz</a>
   </ul>
 </nav>
 <span onclick="openNav()" style="font-size:30px;cursor:pointer">&#9776;</span>
-<section class="content">
+<section id="bodycontent">
   <header>
     {% block header %}{% endblock %}
   </header>
@@ -28,11 +28,11 @@
 <script>
 function openNav() {
   document.getElementById("mySidenav").style.width = "250px";
-  document.getElementById("content").style.marginLeft = "250px";
+  document.getElementById("bodycontent").style.marginLeft = "250px";
 }
 
 function closeNav() {
   document.getElementById("mySidenav").style.width = "0";
-  document.getElementById("content").style.marginLeft= "0";
+  document.getElementById("bodycontent").style.marginLeft= "0";
 }
 </script>

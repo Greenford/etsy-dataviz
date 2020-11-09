@@ -5,3 +5,4 @@ static/
 *.pyc
 data/
 instance/
+tmp/
