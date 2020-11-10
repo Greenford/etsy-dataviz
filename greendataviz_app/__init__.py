@@ -46,10 +46,6 @@ def create_app(test_config=None):
                 flash("No selected file")
                 return redirect(request.url)
             if file and allowed_file(file.filename):
-                #                if os.path.exists("greendataviz_app/static"):
-                #                    import shutil
-                #                    shutil.rmtree("greendataviz_app/static")
-
                 session["filename"] = datetime.now().strftime(
                     "%Y %b %-d %H%M:%S:%f"
                 ) + secure_filename(file.filename)

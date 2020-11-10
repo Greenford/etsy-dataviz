@@ -12,7 +12,7 @@
 </head>
 <body>
     <div id="formDiv">
-        <form method="post">
+        <form method="post" enctype=multipart/form-data>
 	    <select name="listing" id="listing">
 		{% if g.listings is not none %}
 		{% for i in g.listings %}
@@ -24,8 +24,11 @@
 		
 	    <input name="frequency" id="frequency" value='W' required>
 	    <label for="frequency">frequency</label><br>
-		
-	    <input type="checkbox" name="smooth" id="smooth" value="yes">
+	    {% if g.smooth %}
+	    <input type="checkbox" name="smooth" id="smooth" checked>
+	    {% else %}
+	    <input type="checkbox" name="smooth" id="smooth">
+	    {% endif %}
 	    <label for="smooth">smooth</label><br>
 		
 	    <input type="submit" value="Graph">
@@ -48,7 +51,7 @@
 
 	(async function() {
 	  main.redefine("data", (async function(){
-		  const data = await d3.csv('{{url_for('static', filename="d3test.csv")}}');
+		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
 		  const columns = data.columns.slice(1);
 		  return {
 		    y: "Sales",
@@ -60,11 +63,6 @@
 		  };
 		})())
 	})();
-
-//	viewof excluded = selectionModeTxt === "0"
-//	  ? checkbox(stateCodes)
-//	  : Object.assign(html`<hr>`, {value: null})
-
 	</script>
 </body>
 
