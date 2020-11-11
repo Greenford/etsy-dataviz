@@ -30,6 +30,11 @@ def graph_listing():
         session['pt'] = datetime.now().strftime("%Y%b%-d:%H%M:%S:%f")+".pt.csv"
         pt.T.to_csv('./greendataviz_app/static/'+session['pt'])
         g.pt = session['pt']
+        g.listing = listing
+        g.freq = freq
+    else:
+        g.listing = g.listings[0]
+        g.freq = 'W'
     return render_template('variation_sales_multiline_graph.ohq.html')#, smooth=smooth, data=data) 
 
 @bp.before_app_request

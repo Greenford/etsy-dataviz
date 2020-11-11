@@ -3,7 +3,7 @@
 {% block header %}
   <h1>{% block title %}variation sales multilinegraph{% endblock %}</h1>
 {% endblock %}
-{% block content%}
+{% block content %}
 <head>
     <meta charset="utf-8">
     <style>
@@ -22,7 +22,7 @@
 	    </select>
 	    <label for="listing">listing</label><br>
 		
-	    <input name="frequency" id="frequency" value='W' required>
+	    <input name="frequency" id="frequency" value={{g.freq}} required>
 	    <label for="frequency">frequency</label><br>
 	    {% if g.smooth %}
 	    <input type="checkbox" name="smooth" id="smooth" checked>
@@ -44,11 +44,6 @@
 
 	const main = new Runtime().module(define, Inspector.into("#graphDiv"));
 
-//	const main = (new Runtime()).module(define, name => {
-//	  if (name === "chart") return Inspector.into(".chart")();
-//	  else return true;
-//	});
-
 	(async function() {
 	  main.redefine("data", (async function(){
 		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
@@ -64,6 +59,7 @@
 		})())
 	})();
 	</script>
+	<a href="{{ url_for('static', filename=g.pt) }}">Download CSV</a>
 </body>
 
 {% endblock %}
