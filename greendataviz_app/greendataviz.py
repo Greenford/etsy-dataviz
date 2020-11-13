@@ -23,7 +23,7 @@ def get_listings(file=None):
     return _sesh["listings"]
 
 
-def get_variation_sales_data(file=None):
+def get_variation_sales_data(file=None, clean_hook_func = None):
     """
     Gets relevant data from a variety of sources, such as a csv, or via the API (with
     helper functions. 
@@ -43,24 +43,71 @@ def get_variation_sales_data(file=None):
         df = df[["Sale Date", "Item Name", "Quantity", "Price", "Variations", "SKU"]]
         df["Sale Date"] = pd.to_datetime(df["Sale Date"])
         df.fillna({"Variations": ""}, inplace=True)
+        
+        if clean_hook_func;
+            clean_hook_func(df)
 
-        def stripdelay(s):
-            m = re.compile("\([\w\s]+\)\s*").search(s)
-            if m:
-                return s[: m.span()[0]] + s[m.span()[1] :]
-            else:
-                return s
-
-        df["Variations"] = df["Variations"].transform(stripdelay)
-
-        explode_variations_column(df)
     else:  # use API
         pass
 
     return df
 
+def printerror_clean(df):
+    SKU_transform = {
+        'S W PFP':'W 6 PFP',
+        'M W PFP':'W 8 PFP',
+        'L W PFP':'W 10 PFP',
+        'S S PFP':'S 6 PFP',
+        'M S PFP':'S 8 PFP',
+        'L S PFP':'S 10 PFP',
+        'S B PFP':'B 6 PFP',
+        'M B PFP':'B 8 PFP',
+        'L B PFP':'B 10 PFP',
+        'W PFP 10':'W 10 PFP',
+        'S PFP 10':'S 10 PFP',
+        'B PFP  10':'B 10 PFP'
+    }
+    df.SKU = df.SKU.transform(lambda sku: SKU_transform.get(sku, sku))
 
-def explode_variations_column(df, suffix="", drop=True):
+    row_filter = df.SKU.isna() & (df['Item Name']=='3D Printed Polyface Planter')
+    df.loc[row_filter,'SKU'] = df[row_filter].Variations.apply(_fill_SKU_with_variation)
+    df["Variations"] = df["Variations"].transform(_stripdelay)
+    _explode_variations_column(df)
+    #no return - changes in-place
+
+def _stripdelay(s):
+    m = re.compile("\([\w\s]+\)\s*").search(s)
+    if m:
+        return s[: m.span()[0]] + s[m.span()[1] :]
+    else:
+        return s
+def _fill_SKU_with_variation(var):
+    var = var.lower()
+    size_map = {
+        'large': '10',
+        '10': '10',
+        'medium': '8',
+        '8': '8',
+        'small': '6',
+        '6': '6'
+    }
+    color_map = {
+        'white': 'W',
+        'silver': 'S',
+        'black': 'B'
+    }
+    size = color = None
+    for k in size_map.keys():
+        if k in var:
+            size = size_map[k]
+            break
+    for k in color_map.keys():
+        if k in var:
+            color = color_map[k]
+            break
+    return f'{color} {size} PFP'
+
+def _explode_variations_column(df, suffix="", drop=True):
     """
     Uses Variations column (a field of multiple key-value pairs in a string)
     to add a column to the DataFrame for each variation type (size, color, style).
