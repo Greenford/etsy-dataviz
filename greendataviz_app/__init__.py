@@ -68,7 +68,9 @@ def create_app(test_config=None):
 
     @app.route("/clear-file")
     def clear_file():
-        return "Functionality forthcoming"
+        session.pop('filename')
+        flash('File Cleared')
+        return redirect(url_for('entrance'))
 
     @app.route("/help")
     def help():
