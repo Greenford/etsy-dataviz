@@ -51,13 +51,15 @@
 		  return {
 		    y: "Sales",
 		    series: data.map(d => ({
-		      name: d.Variations.replace(/, ([\w-]+).*/, " $1"),
+		      name: d.SKU.replace(/, ([\w-]+).*/, " $1"),
 		      values: columns.map(k => +d[k])
 		    })),
 		    dates: columns.map(d3.utcParse("%Y-%m-%d"))
 		  };
 		})())
 	})();
+
+
 	</script>
 	<a href="{{ url_for('static', filename=g.pt) }}">Download CSV</a>
 </body>

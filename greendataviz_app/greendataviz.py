@@ -44,7 +44,7 @@ def get_variation_sales_data(file=None, clean_hook_func = None):
         df["Sale Date"] = pd.to_datetime(df["Sale Date"])
         df.fillna({"Variations": ""}, inplace=True)
         
-        if clean_hook_func;
+        if clean_hook_func:
             clean_hook_func(df)
 
     else:  # use API
@@ -153,42 +153,33 @@ def variation_sales_linegraph(
 ):
     # focus only on the requested listing
     plot_df = df[df["Item Name"] == listing]
-    if not "Variations" in plot_df.columns:
-        plot_df["Variations"] = ""
-        for n in _sesh["var_col_names"]:
-            plot_df.loc[:, "Variations"] += plot_df[n] + " "
-    relevant_variations = plot_df["Variations"].unique()
+#    if not "Variations" in plot_df.columns:
+#        plot_df["Variations"] = ""
+#        for n in _sesh["var_col_names"]:
+#            plot_df.loc[:, "Variations"] += plot_df[n] + " "
+#    relevant_variations = plot_df["Variations"].unique()
 
     plot_df = (
-        plot_df.groupby([pd.Grouper(key=x_axis_label, freq=gb_freq), "Variations"])
+        plot_df.groupby([pd.Grouper(key=x_axis_label, freq='D'), "SKU"])
+        .sum()
+        .reset_index()
+    )
+
+    plot_df = plot_df[plot_df[x_axis_label] != plot_df[x_axis_label].max()]
+    
+    plot_df = (
+        plot_df.groupby([pd.Grouper(key=x_axis_label, freq=gb_freq), "SKU"])
         .sum()
         .reset_index()
     )
 
     pt = (
         plot_df.pivot_table(
-            index=x_axis_label, columns="Variations", values=y_axis_label
+            index=x_axis_label, columns="SKU", values=y_axis_label
         )
         .fillna(0, downcast="infer")
         .asfreq(gb_freq, fill_value=0)
     )
 
-    # init plot
-    fig, ax = plt.subplots(figsize=(14, 6))
 
-    for v in relevant_variations:
-        ax.plot(pt.index, pt[v], label=v)
-
-    # plot prettying
-    plt.xticks(rotation="vertical")
-    #    plt.tight_layout()
-    ax.set_xlabel(x_axis_label)
-    ax.set_ylabel(y_axis_label)
-    ax.legend()
-
-    if not os.path.exists("greendataviz_app/static"):
-        os.makedirs("greendataviz_app/static")
-    plt_name = datetime.now().strftime(f"%Y-%m-%d-%H_{listing}_{gb_freq}.jpg")
-    plt.savefig("./greendataviz_app/static/" + plt_name, bbox_inches="tight")
-
-    return plt_name, pt
+    return pt
