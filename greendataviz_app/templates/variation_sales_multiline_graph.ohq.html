@@ -10,15 +10,15 @@
         // our CSS here!
     </style>
     	<script src="https://d3js.org/d3.v5.min.js"></script>
-    	<script type="module">
+	<script type="module">
 	import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
 
 	import define from "https://api.observablehq.com/@greenford/multi-line-chart.js?v=3";
 
-	const main = new Runtime().module(define, Inspector.into("#graphDiv"));
+	globalThis.main = new Runtime().module(define, Inspector.into("#graphDiv"));
 
 	(async function() {
-	  main.redefine("data", (async function(){
+	  globalThis.main.redefine("data", (async function(){
 		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
 		  const columns = data.columns.slice(1);
 		  return {
@@ -32,32 +32,32 @@
 		})())
 	})();
 
-//	function refreshSmooth()
-//	{
-//		var checkbox = document.getElementById('smooth');
-//		if (checkbox.checked === true)
-//		{
-//			(function(){main.redefine("line", (function(){
-//				const line = d3.line()
-//				    .defined(d => !isNaN(d))
-//				    .x((d, i) => x(data.dates[i]))
-//				    .y(d => y(d))
-//				    .curve(d3.curveBasis)
-//			})());})();
-//		}
-//		else
-//		{
-//			(function(){main.redefine("line", (function(){
-//				const line = d3.line()
-//				    .defined(d => !isNaN(d))
-//				    .x((d, i) => x(data.dates[i]))
-//				    .y(d => y(d))
-//			})());})();
-//		}
-//	}
-//
-//	document.getElementById("smooth").addEventListener("click", refreshSmooth)
+	d3.select("#smooth")
+		.on("click", () => refreshSmooth())
 
+	function refreshSmooth()
+	{
+		if (document.getElementById("smooth").checked === true)
+		{
+			globalThis.main.redefine("line", ["d3", "x", "data", "y"], (function(d3, x, data, y){
+				return (d3.line()
+				    .defined(d => !isNaN(d))
+				    .x((d, i) => x(data.dates[i]))
+				    .y(d => y(d))
+				    .curve(d3.curveBasis)
+			)}))
+		}
+		else
+		{
+			globalThis.main.redefine("line", ["d3", "x", "data", "y"],(function(d3, x, data, y){
+				return (d3.line()
+				    .defined(d => !isNaN(d))
+				    .x((d, i) => x(data.dates[i]))
+				    .y(d => y(d))
+			)}))
+		}
+	}
+	refreshSmooth()
 
 	</script>
 </head>
