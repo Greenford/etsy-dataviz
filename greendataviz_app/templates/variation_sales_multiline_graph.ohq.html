@@ -9,6 +9,57 @@
     <style>
         // our CSS here!
     </style>
+    	<script src="https://d3js.org/d3.v5.min.js"></script>
+    	<script type="module">
+	import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+
+	import define from "https://api.observablehq.com/@greenford/multi-line-chart.js?v=3";
+
+	const main = new Runtime().module(define, Inspector.into("#graphDiv"));
+
+	(async function() {
+	  main.redefine("data", (async function(){
+		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
+		  const columns = data.columns.slice(1);
+		  return {
+		    y: "Sales",
+		    series: data.map(d => ({
+		      name: d.SKU.replace(/, ([\w-]+).*/, " $1"),
+		      values: columns.map(k => +d[k])
+		    })),
+		    dates: columns.map(d3.utcParse("%Y-%m-%d"))
+		  };
+		})())
+	})();
+
+//	function refreshSmooth()
+//	{
+//		var checkbox = document.getElementById('smooth');
+//		if (checkbox.checked === true)
+//		{
+//			(function(){main.redefine("line", (function(){
+//				const line = d3.line()
+//				    .defined(d => !isNaN(d))
+//				    .x((d, i) => x(data.dates[i]))
+//				    .y(d => y(d))
+//				    .curve(d3.curveBasis)
+//			})());})();
+//		}
+//		else
+//		{
+//			(function(){main.redefine("line", (function(){
+//				const line = d3.line()
+//				    .defined(d => !isNaN(d))
+//				    .x((d, i) => x(data.dates[i]))
+//				    .y(d => y(d))
+//			})());})();
+//		}
+//	}
+//
+//	document.getElementById("smooth").addEventListener("click", refreshSmooth)
+
+
+	</script>
 </head>
 <body>
     <div id="formDiv">
@@ -36,31 +87,6 @@
        </form>
     </div>
     <div id="graphDiv"></div>
-    	<script src="https://d3js.org/d3.v5.min.js"></script>
-    	<script type="module">
-	import {Runtime, Inspector} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-
-	import define from "https://api.observablehq.com/@greenford/multi-line-chart.js?v=3";
-
-	const main = new Runtime().module(define, Inspector.into("#graphDiv"));
-
-	(async function() {
-	  main.redefine("data", (async function(){
-		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
-		  const columns = data.columns.slice(1);
-		  return {
-		    y: "Sales",
-		    series: data.map(d => ({
-		      name: d.SKU.replace(/, ([\w-]+).*/, " $1"),
-		      values: columns.map(k => +d[k])
-		    })),
-		    dates: columns.map(d3.utcParse("%Y-%m-%d"))
-		  };
-		})())
-	})();
-
-
-	</script>
 	<a href="{{ url_for('static', filename=g.pt) }}">Download CSV</a>
 </body>
 
