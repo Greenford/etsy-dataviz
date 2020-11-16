@@ -22,7 +22,7 @@
 		  const data = await d3.csv('{{url_for("static", filename=g.pt)}}');
 		  const columns = data.columns.slice(1);
 		  return {
-		    y: "Sales",
+		    y: "{{g.y}}",
 		    series: data.map(d => ({
 		      name: d.SKU.replace(/, ([\w-]+).*/, " $1"),
 		      values: columns.map(k => +d[k])
@@ -72,7 +72,11 @@
 		{% endif %}
 	    </select>
 	    <label for="listing">listing</label><br>
-		
+	    <select name="y" id="y">
+		    <option value="Quantity">Items Sold</option>
+		    <option value="Price">Revenue</option>
+	    </select>
+	    <label for="y">y</label><br> 
 	    <input name="frequency" id="frequency" value={{g.freq}} required>
 	    <label for="frequency">frequency</label><br>
 	    {% if g.smooth %}

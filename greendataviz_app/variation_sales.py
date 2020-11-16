@@ -39,16 +39,19 @@ def graph_listing():
     if request.method == "POST":
         listing = request.form["listing"]
         freq = request.form["frequency"]
+        y = request.form['y']
         if not request.form.get("smooth", None):
             g.smooth = 0
-        pt = gdv.variation_sales_linegraph(df, listing, freq)
+        pt = gdv.variation_sales_linegraph(df, listing, freq, y_axis_label=y)
         session["pt"] = datetime.now().strftime("%Y%b%-d:%H%M:%S:%f") + ".pt.csv"
         pt.T.to_csv("./greendataviz_app/static/" + session["pt"])
         g.pt = session["pt"]
         g.listing = listing
         g.freq = freq
+        g.y = y
     else:
         g.freq = "W"
+        g.y = "Sales"
     g.listings = session["listings"]
     return render_template(
         "variation_sales_multiline_graph.ohq.html"
